@@ -2,6 +2,8 @@
 
 import argparse
 import logging
+import os
+import sys
 
 
 ## définition des arguments du programmme
@@ -36,4 +38,31 @@ else:
 logging.basicConfig(
   filename=None, format="[%(asctime)s] %(levelname)s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=loglevel
 )
+
+## définition du dossier contenant les backups et test des droits de ce dossier
+if args.backupdir is None:
+  backupdir = os.getcwd()
+else:
+  backupdir = args.backupdir
+
+if not os.path.isdir(backupdir):
+  logging.critical("'{}' n'est pas un dossier ou n'existe pas.".format(backupdir))
+elif not os.access(backupdir, os.R_OK | os.W_OK | os.X_OK):
+  logging.critical(
+    "Le dossier de backup ({}) n'est pas accessible en lecture ou en écriture.".format(os.path.realpath(backupdir))
+  )
+  sys.exit(255)
+else:
+  backupdir = os.path.realpath(backupdir)
+  logging.info("Le dossier de backup est '{}'.".format(backupdir))
+
+# définition des durées de rétention si elle n'ont pas été définie
+if not args.day and not args.week and not args.month and not args.year:
+  logging.info(
+    "Aucune durée de rétention n'est précisé, les valeurs par défaut sont appliquées : 7 jours, 5 semaines, 3 mois, 2 an."
+  )
+  args.day = 7
+  args.week = 5
+  args.month = 3
+  args.year = 2
 
