@@ -112,3 +112,24 @@ for date in os.listdir(backupdir):
     logging.warning("'{}' n'est pas un dossier ou le dossier n'est pas dans un format de date reconnu.".format(dirname))
     # dates["ignored"].add(date)
 
+## vérifie si au moins un dossier de backup est inventorié
+if len(all_dates) == 0:
+  logging.critical("Aucun backup n'a pu être inventorié dans '{}'.".format(backupdir))
+  sys.exit()
+
+## sélection des sauvegardes à garder par périodes
+for period in ("year", "month", "week", "day"):
+  keep_number = getattr(args, period)
+  if keep_number != 0:
+    period_dates = sorted(dates[period].values())
+    dt_list_dates = sorted(dates[period])
+    if dt_list_dates[-1] == dt_most_recent_date[period]:
+      all_dates[period_dates[-1]].append(period + "_in_progress")
+      period_dates.remove(dates[period][dt_list_dates[-1]])
+    if keep_number > 0:
+      for keep_date in period_dates[keep_number * -1 :]:
+        all_dates[keep_date].append(period)
+    else:
+      for keep_date in period_dates:
+        all_dates[keep_date].append(period)
+
