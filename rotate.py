@@ -5,6 +5,7 @@ import datetime as dt
 import logging
 import os
 import re
+import shutil
 import sys
 
 
@@ -133,3 +134,16 @@ for period in ("year", "month", "week", "day"):
       for keep_date in period_dates:
         all_dates[keep_date].append(period)
 
+## affichage et action pour chaque dossier de backup
+for date in sorted(all_dates):
+  dirname = os.path.join(backupdir, date)
+  if len(all_dates[date]) > 0:
+    logging.info("'{}' est marqué à conserver : {}.".format(dirname, ", ".join(all_dates[date])))
+  else:
+    logging.info("'{}' est marqué à supprimer.".format(dirname))
+    if not args.dry_run:
+      try:
+        shutil.rmtree(dirname)
+        logging.debug("{} vient d'être supprimé.".format(dirname))
+      except:
+        logging.error("Une erreur a eu lieu lors de la suppression de {}".format(dirname))
