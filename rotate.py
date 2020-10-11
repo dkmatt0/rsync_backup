@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse
+import datetime as dt
 import logging
 import os
+import re
 import sys
 
 
@@ -65,4 +67,48 @@ if not args.day and not args.week and not args.month and not args.year:
   args.week = 5
   args.month = 3
   args.year = 2
+
+## définition des variables permettant le tri des dates de backup
+regex = re.compile(r"^(?P<year>[0-9]{4})(?P<month>(0[0-9]|1[0-2]))(?P<day>([0-2][0-9]|3[01]))$")
+dates = {"ignored": set(), "year": {}, "month": {}, "week": {}, "day": {}}
+most_recent_date = ""
+dt_most_recent_date = {"year": 1970, "month": (1970, 1), "week": (1970, 1), "day": (1970, 1, 1)}
+all_dates = {}
+
+## tri les dates de backup
+for date in os.listdir(backupdir):
+  dirname = os.path.join(backupdir, date)
+  if os.path.isdir(dirname) and regex.match(date):
+    reg_date = regex.match(date)
+    ## on vérifie que c'est une date valide
+    try:
+      dt_date = dt.date(int(reg_date.group("year")), int(reg_date.group("month")), int(reg_date.group("day")))
+      date_iso = dt_date.isocalendar()
+    except:
+      logging.warning("'{}' sera ignoré car ce n'est pas une date valide.".format(dirname))
+      # dates["ignored"].add(date)
+      continue
+
+    ## définie les varibles utiles au condition pour filtrer la première date de chaque période
+    date_format = {
+      "year": dt_date.year,
+      "month": (dt_date.year, dt_date.month),
+      "week": (date_iso[0], date_iso[1]),
+      "day": (dt_date.year, dt_date.month, dt_date.day),
+    }
+
+    ## on ajoute la date à la liste des dates valides
+    all_dates[date] = []
+
+    ## on fait le test pour avoir la première date de chaque période ainsi que la dernière date globale
+    for period in ("year", "month", "week", "day"):
+      if most_recent_date < date:
+        most_recent_date = date
+        dt_most_recent_date = date_format
+      if date_format[period] not in dates[period] or dates[period][date_format[period]] > date:
+        dates[period][date_format[period]] = date
+
+  else:
+    logging.warning("'{}' n'est pas un dossier ou le dossier n'est pas dans un format de date reconnu.".format(dirname))
+    # dates["ignored"].add(date)
 
