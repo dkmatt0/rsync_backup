@@ -9,6 +9,13 @@ import shutil
 import sys
 
 
+## variables par défaut
+KEEP_YEAR = 2
+KEEP_MONTH = 3
+KEEP_WEEK = 5
+KEEP_DAY = 7
+LOG_LEVEL = 4  # 1: CRITICAL, 2: ERROR, 3: WARNING, 4: INFO, 5: DEBUG
+
 ## définition des arguments du programmme
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--day", type=int, help="keep N daily backups", default=0)
@@ -28,7 +35,7 @@ loglevel_list = (logging.CRITICAL, logging.ERROR, logging.WARNING, logging.INFO,
 if args.quiet:
   loglevel_min = 1
 else:
-  loglevel_min = 3
+  loglevel_min = LOG_LEVEL
 
 if args.verbose + loglevel_min >= 5:
   loglevel = loglevel_list[4]
@@ -41,6 +48,10 @@ else:
 logging.basicConfig(
   filename=None, format="[%(asctime)s] %(levelname)s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=loglevel
 )
+
+## Affichage d'un message lorsque le mode dry-run est actif
+if args.dry_run:
+  logging.info("Mode dry run actif, aucune modification ne sera fait.")
 
 ## définition du dossier contenant les backups et test des droits de ce dossier
 if args.backupdir is None:
@@ -62,7 +73,9 @@ else:
 # définition des durées de rétention si elle n'ont pas été définie
 if not args.day and not args.week and not args.month and not args.year:
   logging.info(
-    "Aucune durée de rétention n'est précisé, les valeurs par défaut sont appliquées : 7 jours, 5 semaines, 3 mois, 2 an."
+    "Aucune durée de rétention n'est précisé, les valeurs par défaut sont appliquées : {} jours, {} semaines, {} mois, {} an.".format(
+      KEEP_DAY, KEEP_WEEK, KEEP_MONTH, KEEP_YEAR
+    )
   )
   args.day = 7
   args.week = 5
