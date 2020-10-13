@@ -77,10 +77,10 @@ if not args.day and not args.week and not args.month and not args.year:
       KEEP_DAY, KEEP_WEEK, KEEP_MONTH, KEEP_YEAR
     )
   )
-  args.day = 7
-  args.week = 5
-  args.month = 3
-  args.year = 2
+  args.day = KEEP_DAY
+  args.week = KEEP_WEEK
+  args.month = KEEP_MONTH
+  args.year = KEEP_YEAR
 
 ## définition des variables permettant le tri des dates de backup
 regex = re.compile(r"^(?P<year>[0-9]{4})(?P<month>(0[0-9]|1[0-2]))(?P<day>([0-2][0-9]|3[01]))$")
