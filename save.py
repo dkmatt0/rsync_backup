@@ -205,3 +205,13 @@ while servers or stop_next == False:
     time.sleep(0.5)  # pause pour ne pas saturer le cpu
 
 
+## affiche un compte-rendu de la sauvegarde
+for server in sorted(finish_servers):
+  if finish_servers[server]["ping"] is False:
+    logging.error(f"{server}: NOK ping")
+    logging.debug(finish_servers[server]["ping_output"])
+  elif finish_servers[server]["rsync"] is False:
+    logging.error(f"{server}: NOK rsync")
+    logging.debug(finish_servers[server]["rsync_output"])
+  else:
+    logging.info(f"{server}: OK")
