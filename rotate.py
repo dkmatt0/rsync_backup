@@ -61,6 +61,7 @@ else:
 
 if not os.path.isdir(backupdir):
   logging.critical("'{}' n'est pas un dossier ou n'existe pas.".format(backupdir))
+  sys.exit(255)
 elif not os.access(backupdir, os.R_OK | os.W_OK | os.X_OK):
   logging.critical(
     "Le dossier de backup ({}) n'est pas accessible en lecture ou en écriture.".format(os.path.realpath(backupdir))
