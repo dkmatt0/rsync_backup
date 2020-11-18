@@ -3,11 +3,15 @@
 import argparse
 import logging
 import os
+import sys
 
 
+## variables par défaut
+LOG_LEVEL = 4  # 1: CRITICAL, 2: ERROR, 3: WARNING, 4: INFO, 5: DEBUG
 ## définition des arguments du programmme
 parser = argparse.ArgumentParser()
 parser.add_argument("-b", "--backupdir", help="home directory to store backup (current directory by default)")
+parser.add_argument("-s", "--server-file", help="file listing all servers to save")
 parser.add_argument("-q", "--quiet", action="store_true", help="be more quiet")
 parser.add_argument("-v", "--verbose", action="count", help="increase output verbosity", default=0)
 parser.add_argument("-n", "--dry-run", action="store_true", help="dry run")
@@ -60,4 +64,24 @@ elif not os.access(backupdir, os.R_OK | os.W_OK | os.X_OK):
 else:
   backupdir = os.path.realpath(backupdir)
   logging.info("Le dossier de backup est '{}'.".format(backupdir))
+
+## test et chargement de la liste des serveurs (à sauvegarder)
+if args.server_file is None:
+  logging.critical("Aucune liste de serveur n'a été fourni")
+  sys.exit(255)
+elif not os.path.isfile(args.server_file):
+  logging.critical("'{}' n'est pas un fichier ou n'existe pas.".format(args.server_file))
+  sys.exit(255)
+elif not os.access(args.server_file, os.R_OK):
+  logging.critical(
+    "La liste des machines ({}) n'est pas accessible en lecture.".format(os.path.realpath(args.server_file))
+  )
+  sys.exit(255)
+else:
+  server_file = os.path.realpath(args.server_file)
+  logging.info("Le fichier listant les serveurs est '{}'.".format(server_file))
+list_server_file = open(server_file, "r")
+list_servers = list_server_file.readlines()
+list_servers = set([x.strip() for x in list_servers if x.strip() != ""])
+logging.debug(list_servers)
 
