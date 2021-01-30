@@ -25,7 +25,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-b", "--backupdir", help="home directory to store backup (current directory by default)")
 parser.add_argument("-r", "--remotedir", help="remote directory to save (/home by default)", default=REMOTE_DIR)
 parser.add_argument("-s", "--server-file", help="file listing all servers to save")
-parser.add_argument("-m", "--max", help="max simultaneous backup", default=MAX_SIMULTANEOUS_BACKUP)
+parser.add_argument("-m", "--max", help="max simultaneous backup", type=int, default=MAX_SIMULTANEOUS_BACKUP)
 parser.add_argument("-u", "--ssh-user", help="ssh user for rsync", default=SSH_REMOTE_USER)
 parser.add_argument("-A", "--ssh-args", help="ssh arguments for rsync", default=SSH_ARGS)
 parser.add_argument("-a", "--rsync-args", help="rsync arguments", default=RSYNC_ARGS)
@@ -111,7 +111,7 @@ stop_next = False
 servers = []
 logging.info("Lancement des sauvegardes.")
 while servers or stop_next == False:
-  ## selectionne les prochaines serveurs sur lesquels lancé la sauvegarde
+  ## selectionne les prochains serveurs sur lesquels lancer la sauvegarde
   i = 0
   while len(servers) < args.max and stop_next == False:
     next_value = next(iter_servers, None)
@@ -154,7 +154,7 @@ while servers or stop_next == False:
       backupdir_server = os.path.join(backupdir, server)
       if not os.path.isdir(os.path.join(backupdir, server)):
         logging.debug(f"Création du dossier {backupdir_server}")
-        if not args.dry_run:
+        if args.dry_run:
           logging.info(f"Malgré le mode dry run, le dossier {backupdir_server} sera réellement créé.")
         os.mkdir(backupdir_server)
       if "rsync_process" not in runnning_servers[server]:
@@ -215,3 +215,5 @@ for server in sorted(finish_servers):
     logging.debug(finish_servers[server]["rsync_output"])
   else:
     logging.info(f"{server}: OK")
+
+# %%
